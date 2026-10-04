@@ -44,10 +44,9 @@ flowchart LR
 ```
 rtl/          core (top.sv), FPU (fp_add_sub, fpu_mul, fpu_div, FregFile), board layer
               (fpga_top, debouncer, uart_tx, baud_rate_generator) and datapath blocks
-tb/           unit testbenches + tb_top_self_check.sv (full-program self-check)
+tb/           tb_top_self_check.sv (full-program self-check), fpu_add_sub_testbench.sv
 sw/           program.s test program, inst_mem.mem / .hex, data_mem_init.coe
 constraints/  nexys_a7.xdc
-ip/           Xilinx distributed memory IP configuration (.xci)
 ```
 
 ## Verification
@@ -58,7 +57,7 @@ ip/           Xilinx distributed memory IP configuration (.xci)
 - `fadd.s`, `fsub.s`, `fmul.s` and `fdiv.s`
 - both outcomes of `feq.s`
 
-The same run also captures the UART byte stream. The report shows all 27 checks passing, and the hex values sent over UART match the core's results bit for bit. There are also unit testbenches for the ALU, decoders, register file, memories, PC, adders and the FP adder.
+The same run also captures the UART byte stream. The report shows all 27 checks passing, and the hex values sent over UART match the core's results bit for bit. There is also a standalone testbench for the floating-point adder/subtractor.
 
 ## FPGA results (Nexys A7, 100 MHz clock)
 | Metric | Value |
@@ -69,7 +68,7 @@ The same run also captures the UART byte stream. The report shows all 27 checks 
 
 ## Build
 1. Create a Vivado project for the Nexys A7 board.
-2. Add `rtl/*.sv` and `constraints/nexys_a7.xdc`, and the IP from `ip/`. The IP can also be regenerated from the `.xci` files, initialised with `sw/data_mem_init.coe`.
+2. Add `rtl/*.sv` and `constraints/nexys_a7.xdc`. Then generate a Distributed Memory Generator IP named `dist_mem_gen_0` (single-port RAM, 256 × 32-bit) initialised with `sw/data_mem_init.coe`.
 3. Put `sw/inst_mem.mem` where `inst_mem.sv`'s `$readmemh` can find it.
 4. Simulate with `tb_top_self_check` as the top, or set `fpga_top` as the synthesis top and generate a bitstream.
 5. On the board, open a 9600-baud terminal. Each press of BTNC runs one instruction and prints its result.
